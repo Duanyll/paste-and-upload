@@ -18,6 +18,7 @@ export default [{
         "@typescript-eslint/naming-convention": ["warn", {
             selector: "import",
             format: ["camelCase", "PascalCase"],
+            leadingUnderscore: "allow",
         }],
 
         curly: "warn",
