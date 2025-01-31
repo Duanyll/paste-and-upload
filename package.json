@@ -27,27 +27,27 @@
         "paste-and-upload.s3.region": {
           "type": "string",
           "default": "us-east-1",
-          "description": "The region of the S3-compatible storage."
+          "description": "The region of the S3-compatible storage. Must be set."
         },
         "paste-and-upload.s3.endpoint": {
           "type": "string",
           "default": "",
-          "description": "The endpoint of the S3-compatible storage."
+          "description": "The endpoint of the S3-compatible storage. Leave empty if you are using AWS S3."
         },
         "paste-and-upload.s3.accessKeyId": {
           "type": "string",
           "default": "",
-          "description": "The access key ID of the S3-compatible storage."
+          "description": "The access key ID of the S3-compatible storage. Can be left empty if your bucket does not require authentication to upload files (Not recommended)."
         },
         "paste-and-upload.s3.secretAccessKey": {
           "type": "string",
           "default": "",
-          "description": "The secret access key of the S3-compatible storage."
+          "description": "The secret access key of the S3-compatible storage. Can be left empty if your bucket does not require authentication to upload files (Not recommended)."
         },
         "paste-and-upload.s3.bucket": {
           "type": "string",
           "default": "",
-          "description": "The bucket of the S3-compatible storage."
+          "description": "The bucket of the S3-compatible storage. Must be set."
         },
         "paste-and-upload.s3.prefix": {
           "type": "string",
@@ -58,6 +58,11 @@
           "type": "string",
           "default": "",
           "description": "The base URL that will be used to generate the public URL of the files. For example, 'https://example.com/' will generate the URL 'https://example.com/image.png'. The path prefix should be manually added to the base URL, or handled by your reverse proxy."
+        },
+        "paste-and-upload.fileSizeLimit": {
+          "type": "integer",
+          "default": 10000000,
+          "description": "File size limit in bytes. Users will be prompted to confirm the upload if the file size exceeds this limit. Set to 0 to disable the limit."
         }
       }
     }
@@ -74,6 +79,10 @@
     "test": "vscode-test"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.7",
+    "@babel/plugin-transform-modules-commonjs": "^7.26.3",
+    "@babel/preset-env": "^7.26.7",
+    "@types/lodash": "^4.17.14",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
     "@types/vscode": "^1.96.0",
@@ -81,16 +90,17 @@
     "@typescript-eslint/parser": "^8.17.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
+    "babel-loader": "^9.2.1",
     "eslint": "^9.16.0",
-    "ts-loader": "^9.5.1",
+    "ts-loader": "^9.5.2",
     "typescript": "^5.7.2",
-    "webpack": "^5.95.0",
-    "webpack-cli": "^5.1.4"
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.738.0",
     "@aws-sdk/lib-storage": "^3.738.0",
-    "@types/lodash": "^4.17.14",
+    "file-type": "^20.0.0",
     "filesize": "^10.1.6",
     "lodash": "^4.17.21"
   }

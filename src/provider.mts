@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import _ from 'lodash';
-import { inspectDataTransfer } from './utils';
+import { readFilesFromDataTransfer, inspectFilesToUpload } from './utils.mjs';
 
 class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, vscode.DocumentDropEditProvider {
     constructor() {
@@ -13,7 +13,8 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 		dataTransfer: vscode.DataTransfer,
 		token: vscode.CancellationToken,
 	): Promise<vscode.DocumentDropEdit | undefined> {
-        await inspectDataTransfer(dataTransfer);
+        const files = await readFilesFromDataTransfer(dataTransfer);
+        inspectFilesToUpload(files);
         return;
     }
 
@@ -24,7 +25,8 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 		context: vscode.DocumentPasteEditContext,
 		token: vscode.CancellationToken,
 	): Promise<vscode.DocumentPasteEdit[] | undefined> {
-        await inspectDataTransfer(dataTransfer);
+        const files = await readFilesFromDataTransfer(dataTransfer);
+        inspectFilesToUpload(files);
         return;
     }
 }

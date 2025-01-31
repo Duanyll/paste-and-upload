@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import _ from 'lodash';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { Upload } from "@aws-sdk/lib-storage";
-const { filesize } = require('filesize');
+import { filesize } from 'filesize';
 
 export class S3Uploader {
     private client: S3Client;

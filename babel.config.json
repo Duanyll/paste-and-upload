@@ -1,0 +1,9 @@
+{
+    "presets": ["@babel/preset-env"],
+    "plugins": [
+      ["@babel/plugin-transform-modules-commonjs", {
+        "strict": true,           // 严格模式
+        "noInterop": false        // 保留默认导出兼容性
+      }]
+    ]
+  }
