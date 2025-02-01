@@ -61,6 +61,15 @@ Copied with `Copy` context menu option.
 [1] text/uri-list: file:///d%3A/source/Current/vscode-paste-and-upload/paste-and-upload/test/Icon2.png
 ```
 
+### Paste Directory from Windows Explorer
+
+This gives a DataTransferItem object with empty MIME types, and cannot read data bytes from it.
+
+```
+[1] : [File] refs, D:%5Csource%5CCurrent%5Cvscode-paste-and-upload%5Cpaste-and-upload%5C.git%5Crefs
+[2] text/uri-list: file:///d%3A/source/Current/vscode-paste-and-upload/paste-and-upload/.git/refs
+```
+
 ## Dropping
 
 ### Drop Image from Windows Explorer
@@ -95,6 +104,15 @@ Dragged an image from chat.
 ```
 [1] text/plain: D:\source\Current\vscode-paste-and-upload\paste-and-upload\test\Icon2.png
 [2] text/uri-list: file:///d%3A/source/Current/vscode-paste-and-upload/paste-and-upload/test/Icon2.png
+```
+
+### Drop Directory from Windows Explorer
+
+Similar to pasting, this gives a DataTransferItem object with empty MIME types.
+
+```
+[1] : [File] refs, D:%5Csource%5CCurrent%5Cvscode-paste-and-upload%5Cpaste-and-upload%5C.git%5Crefs
+[2] text/uri-list: file:///d%3A/source/Current/vscode-paste-and-upload/paste-and-upload/.git/refs
 ```
 
 ## Conclusion

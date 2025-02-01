@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
 import _ from 'lodash';
-import { fileTypeFromBuffer } from 'file-type';
-import { filesize } from 'filesize';
-import { basename, extname } from 'path';
+
+import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
+import MD5 from 'md5.js';
+import { FileNamingMethod, IncompleteResourceFile } from './common.mjs';
+
+const extensionConfig = vscode.workspace.getConfiguration('paste-and-upload');
 
 export async function inspectDataTransfer(dataTransfer: vscode.DataTransfer) {
     let count = 0;
@@ -24,107 +28,37 @@ export async function inspectDataTransfer(dataTransfer: vscode.DataTransfer) {
     console.log(`Total ${count} items`);
 }
 
-async function promptFileSizeLimit(size: number): Promise<boolean> {
-    const limit = vscode.workspace.getConfiguration('paste-and-upload').get<number>('fileSizeLimit');
-    if (limit && size > limit) {
-        const action = await vscode.window.showWarningMessage(
-            `The file is very large (${filesize(size)}), do you still want to upload it?`,
-            'Yes', 'No');
-        return action === 'Yes';
-    }
-    return true;
-}
-
-export interface FileToUpload {
-    mime: string;
-    buffer: Uint8Array;
-    extension: string;
-    name: string;
-}
-
-async function fillFileToUpload(buffer: Uint8Array, filePath: string, knownMimeType?: string): Promise<FileToUpload> {
-    const name = basename(filePath, extname(filePath));
-    if (knownMimeType) {
-        return {
-            mime: knownMimeType,
-            buffer,
-            extension: extname(filePath).slice(1),
-            name
-        };
+export function extractBasenameAndExtension(filePath: string): [string, string] {
+    const sep = /[\/\\]/;
+    const parts = filePath.split(sep);
+    const fileName = parts.pop()!;
+    const lastDot = fileName.lastIndexOf('.');
+    if (lastDot === -1) {
+        return [fileName, ''];
     } else {
-        const fileType = await fileTypeFromBuffer(buffer);
-        if (fileType) {
-            return {
-                mime: fileType.mime,
-                buffer,
-                extension: fileType.ext,
-                name
-            };
-        } else {
-            return {
-                mime: 'application/octet-stream',
-                buffer,
-                extension: '',
-                name
-            };
-        }   
+        return [fileName.substring(0, lastDot), fileName.substring(lastDot + 1)];
     }
 }
 
-export async function readFilesFromDataTransfer(dataTransfer: vscode.DataTransfer): Promise<FileToUpload[]> {
-    const files: FileToUpload[] = [];
-    // First, try to read file attachments
-    for (const i of dataTransfer) {
-        const [mime, item] = i;
-        const itemFile = item.asFile();
-        if (itemFile) {
-            // Here we cannot get the file size before actually reading the file
-            const buffer = await itemFile.data();
-            files.push(await fillFileToUpload(buffer, itemFile.name, mime));
-        }
+export async function generateFileName(method: FileNamingMethod, file: IncompleteResourceFile): Promise<string> {
+    switch (method) {
+        case 'md5':
+        case 'md5Short':
+            const hash = new MD5().update(file.data).digest('hex');
+            return method === 'md5' ? hash : hash.substring(0, 8);
+        case 'uuid':
+            return uuidv4();
+        case 'nanoid':
+            return nanoid();
+        case 'unixTimestamp':
+            return Date.now().toString();
+        case 'readableTimestamp':
+            return new Date().toISOString().replace(/[:.]/g, '-');
+        case 'prompt':
+            const input = await vscode.window.showInputBox({
+                prompt: 'Enter new file name for upload',
+                value: file.name
+            }) ?? '';
+            return input;
     }
-    if (files.length > 0) {
-        const totalSize = files.reduce((acc, cur) => acc + cur.buffer.length, 0);
-        if (!await promptFileSizeLimit(totalSize)) {
-            return [];
-        }
-        return files;
-    }
-    // If no file attachments, try to get `text/uri-list` and read files from URIs
-    const uriList = dataTransfer.get('text/uri-list');
-    if (uriList) {
-        const uris = (await uriList.asString())!.split('\n').map(uri => uri.trim()).filter(uri => uri.length > 0);
-        let totalSize = 0;
-        for (const i of uris) {
-            const uri = vscode.Uri.parse(i);
-            try {
-                const stat = await vscode.workspace.fs.stat(uri);
-                if (stat.type & vscode.FileType.File) {
-                    totalSize += stat.size;
-                }
-            } catch (e) {
-                console.log(`Cannot stat file from URI: ${uri}`);
-            }
-        }
-        if (!await promptFileSizeLimit(totalSize)) {
-            return [];
-        }
-        for (const i of uris) {
-            const uri = vscode.Uri.parse(i);
-            try {
-                const buffer = await vscode.workspace.fs.readFile(uri);
-                files.push(await fillFileToUpload(buffer, uri.path));
-            } catch (e) {
-                console.log(`Cannot read file from URI: ${uri}`);
-            }
-        }
-    }
-    return files;
-}
-
-export function inspectFilesToUpload(files: FileToUpload[]) {
-    for (const i of files) {
-        console.log(`[${i.name}.${i.extension}] ${i.mime} (${filesize(i.buffer.length)})`);
-    }
-    console.log(`Total ${files.length} files`);
 }

@@ -19,6 +19,10 @@
       {
         "command": "paste-and-upload.testS3Connection",
         "title": "Test S3 Connection"
+      },
+      {
+        "command": "paste-and-upload.undoRecentUpload",
+        "title": "Undo Recent Upload"
       }
     ],
     "configuration": {
@@ -52,18 +56,124 @@
         "paste-and-upload.s3.prefix": {
           "type": "string",
           "default": "",
-          "description": "The path prefix that will be used to store the files. For example, 'images/' will store the files in the 'images' folder."
+          "description": "The path prefix that will be used to store the files. For example, 'images/' will store the files in the 'images' folder. (Slashes will be preserved)."
         },
         "paste-and-upload.s3.publicUrlBase": {
           "type": "string",
           "default": "",
-          "description": "The base URL that will be used to generate the public URL of the files. For example, 'https://example.com/' will generate the URL 'https://example.com/image.png'. The path prefix should be manually added to the base URL, or handled by your reverse proxy."
+          "description": "The base URL that will be used to generate the public URL of the files. For example, 'https://example.com/' will generate the URL 'https://example.com/image.png'. The path prefix should be manually added to the base URL (slashes will be preserved), or handled by your reverse proxy."
+        },
+        "paste-and-upload.s3.omitExtension": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do not include the file extension in the uploaded file name (key)."
+        },
+        "paste-and-upload.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "language-overridable",
+          "description": "Enable the extension."
         },
         "paste-and-upload.fileSizeLimit": {
           "type": "integer",
           "default": 10000000,
+          "scope": "language-overridable",
           "description": "File size limit in bytes. Users will be prompted to confirm the upload if the file size exceeds this limit. Set to 0 to disable the limit."
+        },
+        "paste-and-upload.allowMultipleFiles": {
+          "type": "string",
+          "default": "prompt",
+          "enum": [
+            "prompt",
+            "allow",
+            "deny"
+          ],
+          "scope": "language-overridable",
+          "description": "Allow multiple files to be uploaded at once."
+        },
+        "paste-and-upload.mimeTypeDetectionMethod": {
+          "type": "string",
+          "default": "content",
+          "enum": [
+            "content",
+            "extension",
+            "none"
+          ],
+          "enumItemLabels": [
+            "Content",
+            "Extension",
+            "None"
+          ],
+          "enumDescriptions": [
+            "Detect the MIME type of the files based on magic bytes in the content, and fallbacks to file extension when failed",
+            "Detect the MIME type of the files based on the file extension",
+            "Do not detect the MIME type of the files, use `application/octet-stream` as the default MIME type"
+          ],
+          "scope": "language-overridable",
+          "description": "How to detect the MIME type of the files when the clipboard does not provide it."
+        },
+        "paste-and-upload.keepOriginalFilename": {
+          "type": "boolean",
+          "default": false,
+          "scope": "language-overridable",
+          "description": "Keep the original file name when uploading files. If disabled, a random name will be generated. Default file names like 'image.png' will always be renamed."
+        },
+        "paste-and-upload.fileNamingMethod": {
+          "type": "string",
+          "default": "md5Short",
+          "enum": [
+            "md5",
+            "md5Short",
+            "uuid",
+            "nanoid",
+            "unixTimestamp",
+            "readableTimestamp",
+            "prompt"
+          ],
+          "enumItemLabels": [
+            "MD5 Hash",
+            "Short MD5 Hash",
+            "UUID",
+            "Nano ID",
+            "Unix Timestamp",
+            "Readable Timestamp",
+            "Prompt"
+          ],
+          "enumDescriptions": [
+            "MD5 hash of the file content.",
+            "Short (8 Digits) MD5 hash of the file content.",
+            "Random UUIDv4.",
+            "Random Nano ID.",
+            "Unix timestamp in milliseconds.",
+            "Human-readable timestamp.",
+            "Prompt the user for a name."
+          ],
+          "scope": "language-overridable",
+          "description": "The method used to generate the file name when 'keepOriginalFileName' is disabled, or when the file name is not provided by the clipboard."
+        },
+        "paste-and-upload.defaultSnippet": {
+          "type": "string",
+          "default": "${url}",
+          "scope": "language-overridable",
+          "description": "The default snippet that will be inserted in the document after uploading. The following variables can be used: ${url}, ${filename}, ${filenameWithoutExtension}, ${extension}, ${mimeType}. This option is language overridable."
+        },
+        "paste-and-upload.imageSnippet": {
+          "type": "string",
+          "default": "${url}",
+          "scope": "language-overridable",
+          "description": "The snippet that will be inserted in the document after uploading an image. The following variables can be used: ${url}, ${filename}, ${filenameWithoutExtension}, ${extension}, ${mimeType}. This option is language overridable."
+        },
+        "paste-and-upload.undoLimit": {
+          "type": "integer",
+          "default": 10,
+          "description": "The maximum number of undo uploads that can be performed. Set to 0 to disable the undo feature."
         }
+      }
+    },
+    "configurationDefaults": {
+      "[markdown]": {
+        "paste-and-upload.defaultSnippet": "[${1:$TM_SELECTED_TEXT}](${url})",
+        "paste-and-upload.imageSnippet": "![${1:$TM_SELECTED_TEXT}](${url})"
       }
     }
   },
@@ -83,6 +193,7 @@
     "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@babel/preset-env": "^7.26.7",
     "@types/lodash": "^4.17.14",
+    "@types/mime-types": "^2.1.4",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
     "@types/vscode": "^1.96.0",
@@ -102,6 +213,10 @@
     "@aws-sdk/lib-storage": "^3.738.0",
     "file-type": "^20.0.0",
     "filesize": "^10.1.6",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "md5.js": "^1.3.5",
+    "mime-types": "^2.1.35",
+    "nanoid": "^5.0.9",
+    "uuid": "^11.0.5"
   }
 }
