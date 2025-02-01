@@ -61,18 +61,42 @@
         "paste-and-upload.s3.publicUrlBase": {
           "type": "string",
           "default": "",
-          "description": "The base URL that will be used to generate the public URL of the files. For example, 'https://example.com/' will generate the URL 'https://example.com/image.png'. The path prefix should be manually added to the base URL (slashes will be preserved), or handled by your reverse proxy."
+          "description": "The base that should be prepended to the file name to generate the final link. For example, 'https://example.com/imgs/' will generate the URL 'https://example.com/imgs/image.png'. The path prefix should be manually added to the base URL (slashes will be preserved), or handled by your reverse proxy."
         },
         "paste-and-upload.s3.omitExtension": {
           "type": "boolean",
           "default": false,
           "description": "Do not include the file extension in the uploaded file name (key)."
         },
+        "paste-and-upload.workspace.path": {
+          "type": "string",
+          "default": "images",
+          "description": "The path where the files will be saved locally. The path is relative to the workspace folder."
+        },
+        "paste-and-upload.workspace.linkBase": {
+          "type": "string",
+          "default": "images/",
+          "description": "The base that should be prepended to the file name to generate the final link."
+        },
         "paste-and-upload.enabled": {
           "type": "boolean",
           "default": true,
           "scope": "language-overridable",
           "description": "Enable the extension."
+        },
+        "paste-and-upload.uploadDestination": {
+          "type": "string",
+          "default": "s3",
+          "enum": [
+            "s3",
+            "workspace"
+          ],
+          "enumDescriptions": [
+            "Upload the files to the S3-compatible storage.",
+            "Save the files locally in the workspace."
+          ],
+          "scope": "language-overridable",
+          "description": "The destination where the files will be uploaded."
         },
         "paste-and-upload.fileSizeLimit": {
           "type": "integer",
@@ -174,6 +198,11 @@
       "[markdown]": {
         "paste-and-upload.defaultSnippet": "[${1:$TM_SELECTED_TEXT}](${url})",
         "paste-and-upload.imageSnippet": "![${1:$TM_SELECTED_TEXT}](${url})"
+      },
+      "[tex][latex]": {
+        "paste-and-upload.uploadDestination": "workspace",
+        "paste-and-upload.fileNamingMethod": "prompt",
+        "paste-and-upload.imageSnippet": "\\includegraphics{${url}}"
       }
     }
   },
@@ -196,7 +225,6 @@
     "@types/mime-types": "^2.1.4",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
-    "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
     "@vscode/test-cli": "^0.0.10",

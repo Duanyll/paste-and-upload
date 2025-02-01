@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import _ from 'lodash';
-import { ResourceFile, ResourceUploader } from './common.mjs';
+import { ResourceFile, ResourceUploader, UploadDestination } from './common.mjs';
 import { ResourceFileLoader } from './loader.mjs';
 import { S3Uploader } from './s3Uploader.mjs';
+import { WorkspaceUploader } from './workspaceUploader.mjs';
 
 const resourceUploadKind = vscode.DocumentDropOrPasteEditKind.Empty.append('resource-upload');
 
@@ -30,7 +31,7 @@ class ResourceUploadDocumentDropEdit extends vscode.DocumentDropEdit {
 
 export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider<ResourceUploadDocumentPasteEdit>, vscode.DocumentDropEditProvider<ResourceUploadDocumentDropEdit> {
     loaders: { [languageId: string]: ResourceFileLoader } = {};
-    s3uploader: ResourceUploader = new S3Uploader();
+    uploaders: { [key: string]: ResourceUploader } = {};
     undoHistory: [string, () => Thenable<void>][] = [];
     undoLimit = vscode.workspace.getConfiguration('paste-and-upload').get<number>('undoLimit') ?? 10;
     constructor() {
@@ -42,6 +43,22 @@ export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProv
             this.loaders[languageId] = new ResourceFileLoader(languageId);
         }
         return this.loaders[languageId];
+    }
+
+    private getUploader(key: UploadDestination) {
+        if (!this.uploaders[key]) {
+            switch (key) {
+                case 's3':
+                    this.uploaders[key] = new S3Uploader();
+                    break;
+                case 'workspace':
+                    this.uploaders[key] = new WorkspaceUploader();
+                    break;
+                default:
+                    throw new Error(`Unknown upload destination ${key}`);
+            }
+        }
+        return this.uploaders[key];
     }
 
     public async provideDocumentDropEdits(
@@ -70,11 +87,11 @@ export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProv
     async executeUpload(edit: ResourceUploadDocumentDropEdit | ResourceUploadDocumentPasteEdit) {
         const loader = this.getLoader(edit.languageId);
         const workspaceEdit = new vscode.WorkspaceEdit();
-        const uploader = this.s3uploader;
+        const uploader = this.getUploader(loader.getUploadDestination());
         const snippets: string[] = [];
         for (const file of edit.files) {
             try {
-                const result = await uploader.uploadFile(file, workspaceEdit);
+                const result = await uploader.uploadFile(file, edit.documentUri, workspaceEdit);
                 snippets.push(loader.generateSnippet(file, result.uri));
                 if (result.undo) {
                     this.undoHistory.push([result.undoTitle ?? file.name, result.undo]);

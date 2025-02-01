@@ -17,8 +17,10 @@ export interface IncompleteResourceFile {
 export type MimeTypeDetectionMethod = 'content' | 'extension' | 'none';
 export type FileNamingMethod = 'md5' | 'md5Short' | 'uuid' | 'nanoid' | 'unixTimestamp' | 'readableTimestamp' | 'prompt';
 export type AllowMultipleFiles = 'allow' | 'deny' | 'prompt';
+export type UploadDestination = 's3' | 'workspace';
 export interface ResourceFileLoaderOptions {
     enabled: boolean;
+    uploadDestination: UploadDestination;
     fileSizeLimit: number;
     mimeTypeDetectionMethod: MimeTypeDetectionMethod;
     keepOriginalFilename: boolean;
@@ -35,7 +37,7 @@ export interface ResourceUploadResult {
 }
 
 export interface ResourceUploader {
-    uploadFile(file: ResourceFile, edit: vscode.WorkspaceEdit): Promise<ResourceUploadResult>;
+    uploadFile(file: ResourceFile, doucumentUri: vscode.Uri, edit: vscode.WorkspaceEdit): Promise<ResourceUploadResult>;
 }
 
 export interface S3Options {
@@ -47,4 +49,9 @@ export interface S3Options {
     prefix?: string;
     publicUrlBase?: string;
     omitExtension?: boolean;
+}
+
+export interface WorkspaceOptions {
+    path: string;
+    linkBase: string;
 }

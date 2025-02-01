@@ -5,7 +5,7 @@ import * as mimeLookup from 'mime-types';
 import { filesize } from 'filesize';
 
 import { extractBasenameAndExtension, generateFileName } from './utils.mjs';
-import { ResourceFileLoaderOptions, MimeTypeDetectionMethod, FileNamingMethod, IncompleteResourceFile, ResourceFile, AllowMultipleFiles, ResourceUploader } from './common.mjs';
+import { ResourceFileLoaderOptions, MimeTypeDetectionMethod, FileNamingMethod, IncompleteResourceFile, ResourceFile, AllowMultipleFiles, ResourceUploader, UploadDestination } from './common.mjs';
 
 export class ResourceFileLoader {
     private readonly options: ResourceFileLoaderOptions;
@@ -13,6 +13,7 @@ export class ResourceFileLoader {
         const languageOptions = vscode.workspace.getConfiguration('paste-and-upload', { languageId });
         this.options = {
             enabled: languageOptions.get<boolean>('enabled')!,
+            uploadDestination: languageOptions.get<UploadDestination>('uploadDestination')!,
             fileSizeLimit: languageOptions.get<number>('fileSizeLimit')!,
             mimeTypeDetectionMethod: languageOptions.get<MimeTypeDetectionMethod>('mimeTypeDetectionMethod')!,
             keepOriginalFilename: languageOptions.get<boolean>('keepOriginalFilename')!,
@@ -21,6 +22,10 @@ export class ResourceFileLoader {
             imageSnippet: languageOptions.get<string>('imageSnippet')!,
             allowMultipleFiles: languageOptions.get<AllowMultipleFiles>('allowMultipleFiles')!
         };
+    }
+
+    public getUploadDestination(): UploadDestination {
+        return this.options.uploadDestination;
     }
 
     private async loadDataTransferAttachments(dataTransfer: vscode.DataTransfer): Promise<IncompleteResourceFile[]> {
