@@ -21,6 +21,6 @@ export class WorkspaceUploader implements ResourceUploader {
         edit.createFile(destUri, { overwrite: true, contents: file.data });
         return {
             uri: `${this.options.linkBase}${filename}`
-        }
+        };
     }
 }

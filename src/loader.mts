@@ -102,7 +102,7 @@ export class ResourceFileLoader {
             name: name!,
             extension: extension!,
             data: file.data
-        }
+        };
     }
 
     private preventDuplicateFilenames(files: ResourceFile[]) {

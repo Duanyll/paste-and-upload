@@ -29,7 +29,7 @@ export class S3Uploader implements ResourceUploader {
             prefix: emptyToUndefined(s3Section.get<string>('prefix')),
             publicUrlBase: emptyToUndefined(s3Section.get<string>('publicUrlBase')),
             omitExtension: s3Section.get<boolean>('omitExtension')
-        }
+        };
         this.client = this.createClient();
     }
 
