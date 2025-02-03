@@ -66,10 +66,16 @@ export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProv
         position: vscode.Position,
         dataTransfer: vscode.DataTransfer,
         token: vscode.CancellationToken,
-    ): Promise<ResourceUploadDocumentDropEdit | undefined> {
+    ): Promise<ResourceUploadDocumentDropEdit[] | undefined> {
+        console.log('provideDocumentDropEdits');
         const loader = this.getLoader(document.languageId);
         const files = await loader.prepareFilesToUpload(dataTransfer);
-        return new ResourceUploadDocumentDropEdit(files, document.uri, document.languageId, [new vscode.Range(position, position)]);
+        if (files.length === 0) {
+            return undefined;
+        }
+        const edit = new ResourceUploadDocumentDropEdit(files, document.uri, document.languageId, [new vscode.Range(position, position)]);
+        await this.executeUpload(edit);
+        return [edit];
     }
 
     public async provideDocumentPasteEdits(
@@ -81,6 +87,9 @@ export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProv
     ): Promise<ResourceUploadDocumentPasteEdit[] | undefined> {
         const loader = this.getLoader(document.languageId);
         const files = await loader.prepareFilesToUpload(dataTransfer);
+        if (files.length === 0) {
+            return undefined;
+        }
         return [new ResourceUploadDocumentPasteEdit(files, document.uri, document.languageId, ranges)];
     }
 
@@ -109,13 +118,13 @@ export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProv
     }
 
     public async resolveDocumentDropEdit(edit: ResourceUploadDocumentDropEdit, token: vscode.CancellationToken): Promise<ResourceUploadDocumentDropEdit> {
-        console.log('resolveDocumentDropEdit: ', edit.files[0].name);
-        await this.executeUpload(edit);
+        // FIXME: VS Code never calls this method
+        console.log('Calling resolveDocumentDropEdit');
+        // await this.executeUpload(edit);
         return edit;
     }
 
     public async resolveDocumentPasteEdit(edit: ResourceUploadDocumentPasteEdit, token: vscode.CancellationToken): Promise<ResourceUploadDocumentPasteEdit> {
-        console.log('resolveDocumentPasteEdit', edit.files[0].name);
         await this.executeUpload(edit);
         return edit;
     }

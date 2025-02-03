@@ -62,3 +62,10 @@ export async function generateFileName(method: FileNamingMethod, file: Incomplet
             return input;
     }
 }
+
+export function inspectResouceFiles(files: IncompleteResourceFile[]) {
+    for (const file of files) {
+        console.log(`[${file.mime}] ${file.name}.${file.extension} (${file.data.length} bytes)`);
+    }
+    console.log(`Total ${files.length} files`);
+}

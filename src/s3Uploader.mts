@@ -91,7 +91,7 @@ export class S3Uploader implements ResourceUploader {
     }
 
     public async testConnection(): Promise<void> {
-        const payload = new Uint8Array(4 * 1024 * 1024);
+        const payload = new Uint8Array(100 * 1000);
         const prefix = vscode.workspace.getConfiguration('paste-and-upload.s3').get<string>('prefix') ?? '';
         const key = `${prefix}paste-and-upload-test.txt`;
         try {
