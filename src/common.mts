@@ -28,6 +28,8 @@ export interface ResourceFileLoaderOptions {
     defaultSnippet: string;
     imageSnippet: string;
     allowMultipleFiles: AllowMultipleFiles;
+    mimeTypeFilter: string;
+    ignoreWorkspaceFiles: boolean;
 }
 
 export interface ResourceUploadResult {

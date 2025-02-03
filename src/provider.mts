@@ -4,6 +4,7 @@ import { ResourceFile, ResourceUploader, UploadDestination } from './common.mjs'
 import { ResourceFileLoader } from './loader.mjs';
 import { S3Uploader } from './s3Uploader.mjs';
 import { WorkspaceUploader } from './workspaceUploader.mjs';
+import { inspectDataTransfer } from './utils.mjs';
 
 const resourceUploadKind = vscode.DocumentDropOrPasteEditKind.Empty.append('resource-upload');
 
@@ -67,7 +68,6 @@ export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProv
         dataTransfer: vscode.DataTransfer,
         token: vscode.CancellationToken,
     ): Promise<ResourceUploadDocumentDropEdit[] | undefined> {
-        console.log('provideDocumentDropEdits');
         const loader = this.getLoader(document.languageId);
         const files = await loader.prepareFilesToUpload(dataTransfer);
         if (files.length === 0) {
@@ -165,6 +165,16 @@ export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProv
                 pasteMimeTypes: ['files', 'text/uri-list', 'image/*']
             }),
             vscode.commands.registerCommand('paste-and-upload.undoRecentUpload', () => this.showUndoMenu()),
+            vscode.workspace.onDidChangeConfiguration(e => {
+                if (e.affectsConfiguration('paste-and-upload')) {
+                    this.undoLimit = vscode.workspace.getConfiguration('paste-and-upload').get<number>('undoLimit') ?? 10;
+                    while (this.undoHistory.length > this.undoLimit) {
+                        this.undoHistory.shift();
+                    }
+                    this.loaders = {};
+                    this.uploaders = {};
+                }
+            })
         );
     }
 }

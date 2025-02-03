@@ -54,7 +54,7 @@
       "properties": {
         "paste-and-upload.s3.region": {
           "type": "string",
-          "default": "us-east-1",
+          "default": "",
           "description": "The region of the S3-compatible storage. Must be set."
         },
         "paste-and-upload.s3.endpoint": {
@@ -80,12 +80,12 @@
         "paste-and-upload.s3.prefix": {
           "type": "string",
           "default": "",
-          "description": "The path prefix that will be used to store the files. For example, 'images/' will store the files in the 'images' folder. (Slashes will be preserved)."
+          "markdownDescription": "The path prefix that will be used to store the files. For example, `images/` will store the files in the `images` folder. (Slashes will be preserved)."
         },
         "paste-and-upload.s3.publicUrlBase": {
           "type": "string",
           "default": "",
-          "description": "The base that should be prepended to the file name to generate the final link. For example, 'https://example.com/imgs/' will generate the URL 'https://example.com/imgs/image.png'. The path prefix should be manually added to the base URL (slashes will be preserved), or handled by your reverse proxy."
+          "markdownDescription": "The base that should be prepended to the file name to generate the final link. For example, `https://example.com/imgs/` will generate the URL `https://example.com/imgs/image.png`. The path prefix should be manually added to the base URL (slashes will be preserved), or handled by your reverse proxy."
         },
         "paste-and-upload.s3.omitExtension": {
           "type": "boolean",
@@ -152,7 +152,7 @@
             "Extension",
             "None"
           ],
-          "enumDescriptions": [
+          "markdownEnumDescriptions": [
             "Detect the MIME type of the files based on magic bytes in the content, and fallbacks to file extension when failed",
             "Detect the MIME type of the files based on the file extension",
             "Do not detect the MIME type of the files, use `application/octet-stream` as the default MIME type"
@@ -164,7 +164,7 @@
           "type": "boolean",
           "default": false,
           "scope": "language-overridable",
-          "description": "Keep the original file name when uploading files. If disabled, a random name will be generated. Default file names like 'image.png' will always be renamed."
+          "markdownDescription": "Keep the original file name when uploading files. If disabled, a random name will be generated. Default file names like `image.png` will always be renamed."
         },
         "paste-and-upload.fileNamingMethod": {
           "type": "string",
@@ -197,24 +197,34 @@
             "Prompt the user for a name."
           ],
           "scope": "language-overridable",
-          "description": "The method used to generate the file name when 'keepOriginalFileName' is disabled, or when the file name is not provided by the clipboard."
+          "markdownDescription": "The method used to generate the file name when `#paste-and-upload.keepOriginalFilename#` is disabled, or when the file name is not provided by the clipboard."
         },
         "paste-and-upload.defaultSnippet": {
           "type": "string",
           "default": "${url}",
           "scope": "language-overridable",
-          "description": "The default snippet that will be inserted in the document after uploading. The following variables can be used: ${url}, ${filename}, ${filenameWithoutExtension}, ${extension}, ${mimeType}. This option is language overridable."
+          "markdownDescription": "The default snippet that will be inserted in the document after uploading. The following variables can be used: \n\n- `${url}`\n- `${filename}`\n- `${filenameWithoutExtension}`\n- `${extension}`\n- `${mimeType}`"
         },
         "paste-and-upload.imageSnippet": {
           "type": "string",
           "default": "${url}",
           "scope": "language-overridable",
-          "description": "The snippet that will be inserted in the document after uploading an image. The following variables can be used: ${url}, ${filename}, ${filenameWithoutExtension}, ${extension}, ${mimeType}. This option is language overridable."
+          "markdownDescription": "The default snippet that will be inserted in the document after uploading. The following variables can be used: \n\n- `${url}`\n- `${filename}`\n- `${filenameWithoutExtension}`\n- `${extension}`\n- `${mimeType}`"
         },
         "paste-and-upload.undoLimit": {
           "type": "integer",
           "default": 10,
-          "description": "The maximum number of undo uploads that can be performed. Set to 0 to disable the undo feature."
+          "markdownDescription": "The maximum number of undo uploads that can be performed. Set to 0 to disable the undo feature."
+        },
+        "paste-and-upload.mimeTypeFilter": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "A regular expression that matches the MIME types that should be uploaded, for example, `image/.*` will only upload images. Leave empty to upload any MIME type. Note that the MIME type of text files is not realiably detected, and will be treated as `application/octet-stream` if the detection fails."
+        },
+        "paste-and-upload.ignoreWorkspaceFiles": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Ignore files that are already in the workspace when uploading files. Other extensions like the built-in Markdown extension may handle these files."
         }
       }
     },

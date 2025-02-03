@@ -20,7 +20,9 @@ export class ResourceFileLoader {
             fileNamingMethod: languageOptions.get<FileNamingMethod>('fileNamingMethod')!,
             defaultSnippet: languageOptions.get<string>('defaultSnippet')!,
             imageSnippet: languageOptions.get<string>('imageSnippet')!,
-            allowMultipleFiles: languageOptions.get<AllowMultipleFiles>('allowMultipleFiles')!
+            allowMultipleFiles: languageOptions.get<AllowMultipleFiles>('allowMultipleFiles')!,
+            mimeTypeFilter: languageOptions.get<string>('mimeTypeFilter')!,
+            ignoreWorkspaceFiles: languageOptions.get<boolean>('ignoreWorkspaceFiles')!
         };
     }
 
@@ -34,6 +36,14 @@ export class ResourceFileLoader {
             const [mime, item] = i;
             const itemFile = item.asFile();
             if (!_.isEmpty(mime) && itemFile) {
+                if (this.options.ignoreWorkspaceFiles) {
+                    let uri = itemFile.uri;
+                    if (uri) {
+                        if (vscode.workspace.getWorkspaceFolder(uri)) {
+                            continue;
+                        }
+                    }
+                }
                 const data = await itemFile.data();
                 const [name, extension] = extractBasenameAndExtension(itemFile.name);
                 files.push({ mime, name, extension, data });
@@ -47,6 +57,9 @@ export class ResourceFileLoader {
         const uriList = _.map(_.split(await dataTransfer.get('text/uri-list')?.asString(), '\n'), _.trim);
         for (const i of uriList) {
             const uri = vscode.Uri.parse(i);
+            if (this.options.ignoreWorkspaceFiles && vscode.workspace.getWorkspaceFolder(uri)) {
+                continue;
+            }
             try {
                 const stat = await vscode.workspace.fs.stat(uri);
                 if (stat.type & vscode.FileType.File) {
@@ -124,13 +137,29 @@ export class ResourceFileLoader {
             return [];
         }
 
-        // 1. Load files
+        // Load files
         let files = await this.loadDataTransferAttachments(dataTransfer);
         if (_.isEmpty(files)) {
             files = await this.loadDataTransferUriLists(dataTransfer);
         }
 
-        // 2. Check against multiple files limit
+        // Complete file information
+        let result: ResourceFile[] = [];
+        for (const i of files) {
+            const file = await this.completeResourceFile(i);
+            if (file) {
+                result.push(file);
+            }
+        }
+        this.preventDuplicateFilenames(result);
+
+        // Filter by mime type
+        if (!_.isEmpty(this.options.mimeTypeFilter)) {
+            const regex = new RegExp(this.options.mimeTypeFilter, 'i');
+            result = _.filter(result, i => regex.test(i.mime));
+        }
+
+        // Check against multiple files limit
         if (files.length > 1) {
             if (this.options.allowMultipleFiles === 'deny') {
                 vscode.window.showWarningMessage('Multiple files are not allowed, please select only one file.');
@@ -143,17 +172,7 @@ export class ResourceFileLoader {
             }
         }
 
-        // 3. Complete file information
-        let result: ResourceFile[] = [];
-        for (const i of files) {
-            const file = await this.completeResourceFile(i);
-            if (file) {
-                result.push(file);
-            }
-        }
-        this.preventDuplicateFilenames(result);
-
-        // 4. Check against file size limit
+        // Check against file size limit
         let totalSize = _.sumBy(result, i => i.data.length);
         if (this.options.fileSizeLimit > 0 && totalSize > this.options.fileSizeLimit) {
             const choice = await vscode.window.showWarningMessage(`The size of selected files (${filesize(totalSize)}) is very large, still upload?`, 'Yes', 'No');
