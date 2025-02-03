@@ -68,7 +68,7 @@ Undoing paste operation by pressing `Ctrl+Z` can revert changes in the workspace
 
 ## Release Notes
 
-### 1.0.0
+### 0.1.0
 
 Initial release of Paste and Upload.
 
