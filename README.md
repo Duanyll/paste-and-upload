@@ -15,7 +15,7 @@ This extension allows you to paste images (and other files) directly from your c
 
 ## Requirements
 
-Need VS Code 1.97 or later. No external dependencies are required.
+Need VS Code 1.97 or later. No external dependencies are required, works across all platforms and remote workspaces.
 
 ## Extension Settings
 
@@ -71,3 +71,7 @@ Undoing paste operation by pressing `Ctrl+Z` can revert changes in the workspace
 ### 1.0.0
 
 Initial release of Paste and Upload.
+
+## Acknowledgements
+
+The icon comes from [PureSugar Icons](https://dribbble.com/shots/6689165-Pure-Sugar-60-Free-SVG-Icons-Pack-Sketch-Vector-Icon-Freebie) by Nitish Khagwal.

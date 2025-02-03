@@ -1,23 +1,42 @@
 {
   "name": "paste-and-upload",
-  "displayName": "paste-and-upload",
-  "description": "Paste images and files from clipboard, upload it to a S3-compatible storage and generate a link in current file. The extension is powered by the new DocumentPasteEdit API, allowing to be run in browsers and remote environments.",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "publisher": "duanyll",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "license": "MIT",
+  "displayName": "Paste and Upload",
+  "description": "Paste images (and other files) directly from your clipboard, upload them to a S3 bucket or save them to your workspace, then insert a link pointing to the image. Works in remote development environments.",
+  "categories": [
+    "Other"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Duanyll/paste-and-upload"
   },
-  "engines": {
-    "vscode": "^1.96.0"
-  },
-  "categories": [
-    "Other"
+  "keywords": [
+    "paste",
+    "upload",
+    "image",
+    "picture",
+    "markdown"
   ],
   "activationEvents": [
-    "onLanguage:markdown",
-    "onLanguage:plaintext"
+    "onStartupFinished"
   ],
+  "extensionKind": ["ui", "workspace"],
+  "icon": "assets/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "The extension does not read S3 credentials from untrusted workspaces.",
+      "restrictedConfigurations": [
+        "paste-and-upload.s3"
+      ]
+    }
+  },
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
