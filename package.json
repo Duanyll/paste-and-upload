@@ -3,6 +3,11 @@
   "displayName": "paste-and-upload",
   "description": "Paste images and files from clipboard, upload it to a S3-compatible storage and generate a link in current file. The extension is powered by the new DocumentPasteEdit API, allowing to be run in browsers and remote environments.",
   "version": "0.0.1",
+  "publisher": "duanyll",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Duanyll/paste-and-upload"
+  },
   "engines": {
     "vscode": "^1.96.0"
   },
