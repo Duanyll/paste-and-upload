@@ -109,7 +109,8 @@
           "type": "boolean",
           "default": true,
           "scope": "language-overridable",
-          "description": "Enable the extension."
+          "description": "Enable the extension.",
+          "order": 0
         },
         "paste-and-upload.uploadDestination": {
           "type": "string",
@@ -123,7 +124,8 @@
             "Save the files locally in the workspace."
           ],
           "scope": "language-overridable",
-          "description": "The destination where the files will be uploaded."
+          "description": "The destination where the files will be uploaded.",
+          "order": 1
         },
         "paste-and-upload.fileSizeLimit": {
           "type": "integer",
@@ -200,19 +202,22 @@
             "Prompt the user for a name."
           ],
           "scope": "language-overridable",
-          "markdownDescription": "The method used to generate the file name when `#paste-and-upload.keepOriginalFilename#` is disabled, or when the file name is not provided by the clipboard."
+          "markdownDescription": "The method used to generate the file name when `#paste-and-upload.keepOriginalFilename#` is disabled, or when the file name is not provided by the clipboard.",
+          "order": 2
         },
         "paste-and-upload.defaultSnippet": {
           "type": "string",
           "default": "${url}",
           "scope": "language-overridable",
-          "markdownDescription": "The default snippet that will be inserted in the document after uploading. The following variables can be used: \n\n- `${url}`\n- `${filename}`\n- `${filenameWithoutExtension}`\n- `${extension}`\n- `${mimeType}`"
+          "markdownDescription": "The default snippet that will be inserted in the document after uploading. The following variables can be used: \n\n- `${url}`\n- `${filename}`\n- `${filenameWithoutExtension}`\n- `${extension}`\n- `${mimeType}`",
+          "order": 3
         },
         "paste-and-upload.imageSnippet": {
           "type": "string",
           "default": "${url}",
           "scope": "language-overridable",
-          "markdownDescription": "The default snippet that will be inserted in the document after uploading. The following variables can be used: \n\n- `${url}`\n- `${filename}`\n- `${filenameWithoutExtension}`\n- `${extension}`\n- `${mimeType}`"
+          "markdownDescription": "The default snippet that will be inserted in the document after uploading. The following variables can be used: \n\n- `${url}`\n- `${filename}`\n- `${filenameWithoutExtension}`\n- `${extension}`\n- `${mimeType}`",
+          "order": 4
         },
         "paste-and-upload.undoLimit": {
           "type": "integer",
@@ -222,12 +227,14 @@
         "paste-and-upload.mimeTypeFilter": {
           "type": "string",
           "default": "",
-          "markdownDescription": "A regular expression that matches the MIME types that should be uploaded, for example, `image/.*` will only upload images. Leave empty to upload any MIME type. Note that the MIME type of text files is not realiably detected, and will be treated as `application/octet-stream` if the detection fails."
+          "markdownDescription": "A regular expression that matches the MIME types that should be uploaded, for example, `image/.*` will only upload images. Leave empty to upload any MIME type. Note that the MIME type of text files is not realiably detected, and will be treated as `application/octet-stream` if the detection fails.",
+          "order": 5
         },
         "paste-and-upload.ignoreWorkspaceFiles": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Ignore files that are already in the workspace when uploading files. Other extensions like the built-in Markdown extension may handle these files."
+          "markdownDescription": "Ignore files that are already in the workspace when uploading files. Other extensions like the built-in Markdown extension may handle these files.",
+          "order": 6
         }
       }
     },
@@ -264,6 +271,7 @@
     "@types/mime-types": "^2.1.4",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/vscode": "^1.97.0",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
     "@vscode/test-cli": "^0.0.10",

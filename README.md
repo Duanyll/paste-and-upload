@@ -19,7 +19,7 @@ Need VS Code 1.97 or later. No external dependencies are required, works across 
 
 ## Extension Settings
 
-Refer to `Settings` -> `Extensions` -> `Paste and Upload` for full list of settings. Heres somthing you might want to configure in `settings.json`:
+The S3 settings are required if you want to upload images to S3. You can configure them in your user settings (or workspace settings) like this:
 
 ```jsonc
 {
@@ -46,7 +46,7 @@ All settings are overridable by workspace settings. Settings directly belonging 
   // Save as ${workspaceFolder}/figures/image.png
   "paste-and-upload.workspace.path": "figures",
   // Insert \includegraphics{image.png} (If you have \graphicspath{figures})
-  "paste-and-upload.workspace.linkBase": "",    
+  "paste-and-upload.workspace.linkBase": "",
   "[markdown]": {
     "paste-and-upload.enabled": true,
     "paste-and-upload.uploadDestination": "s3"
@@ -58,7 +58,19 @@ All settings are overridable by workspace settings. Settings directly belonging 
 }
 ```
 
-You may also want to configure `paste-and-upload.fileNamingMethod` to customize the naming of uploaded files. 
+A full list of settings can be found in the VS Code settings UI (search for `Paste and Upload`). Here are some notable settings:
+
+| Name                                    | Description                               | Default    | Default for Markdown                |
+| --------------------------------------- | ----------------------------------------- | ---------- | ----------------------------------- |
+| `paste-and-upload.enabled`              | Enable or disable the extension           | `true`     |                                     |
+| `paste-and-upload.uploadDestination`    | Where to upload images to                 | `s3`       |                                     |
+| `paste-and-upload.fileNamingMethod`     | How to name the uploaded files            | `md5short` |                                     |
+| `paste-and-upload.defaultSnippet`       | The default snippet to insert             | `$url`     | `[${1:$TM_SELECTED_TEXT}](${url})`  |
+| `paste-and-upload.imageSnippet`         | The snippet for images                    | `$url`     | `![${1:$TM_SELECTED_TEXT}](${url})` |
+| `paste-and-upload.mimeTypeFilter`       | Regex to filter pasted files by MIME type | `""`       |                                     |
+| `paste-and-upload.ignoreWorkspaceFiles` | Ignore files already in workspace         | `true`     |                                     |
+
+This extension utilizes the native VS Code API to paste images, please also refer to the `Paste As` and `Drop` sections in the VS Code settings to control the behavior of pasting and dropping files, and the priority of this extension.
 
 ## Known Issues
 
@@ -71,6 +83,11 @@ Undoing paste operation by pressing `Ctrl+Z` can revert changes in the workspace
 ### 0.1.0
 
 Initial release of Paste and Upload.
+
+### 0.2.0
+
+- More documentation on settings
+- Add first run notification
 
 ## Acknowledgements
 
