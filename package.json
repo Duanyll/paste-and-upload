@@ -1,6 +1,6 @@
 {
   "name": "paste-and-upload",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "duanyll",
   "engines": {
     "vscode": "^1.97.0"
