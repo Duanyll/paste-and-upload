@@ -1,4 +1,10 @@
+<p align="center">
+  <img src="https://github.com/Duanyll/paste-and-upload/blob/master/assets/icon.png?raw=true" />
+</p>
+
 # Paste and Upload
+
+[![](https://img.shields.io/badge/Visual_Studio_Marketplace-Download-blue)](https://marketplace.visualstudio.com/items?itemName=duanyll.paste-and-upload) [![](https://img.shields.io/badge/Open_VSX-Download-blue)](https://open-vsx.org/extension/duanyll/paste-and-upload) [![](https://img.shields.io/badge/GitHub-Source-blue)](https://github.com/duanyll/paste-and-upload)
 
 This extension allows you to paste images (and other files) directly from your clipboard, upload them to a S3 bucket or save them to your workspace, then insert a link pointing to the image. It utilizes the `DocumentPaste` and `DocumentDrop` API and works on remote workspaces.
 
