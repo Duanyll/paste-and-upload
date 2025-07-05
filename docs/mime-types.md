@@ -118,3 +118,22 @@ Similar to pasting, this gives a DataTransferItem object with empty MIME types.
 ## Conclusion
 
 To retrieve the image file, first check for MIME types with an attachment of file. If there is no attachment, check for `text/uri-list` and try to download the file from the URIs. Gussing MIME types from file extensions is not reliable, as shown in the case of webp images from Microsoft Edge.
+
+## GIF
+
+When pasting or dropping a GIF image from browser, it will be converted to PNG format and lose its animation.
+
+```
+[1] text/html: <html><body><!--StartFragment--><img src="https://img.duanyll.com/img/43466dda.gif" alt="不同插值方式改 ... (151 bytes)
+[2] image/png: [File] image.png, undefined
+```
+
+However a `text/html` item is still provided, which contains the original GIF image URL. Should try to HEAD the URL to detect if it is a GIF image, and retrieve it if so.
+
+The URL in the `text/html` is always URI-encoded, we can try to extract it with a simple regex:
+
+```
+[1] text/html: <html>
+<body>
+<!--StartFragment--><img src="https://cdn.duanyll.com/%E4%B8%AD%E6%96%87"/><!--EndFr ... (127 bytes)
+```

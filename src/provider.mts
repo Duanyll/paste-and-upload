@@ -68,6 +68,7 @@ export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProv
         dataTransfer: vscode.DataTransfer,
         token: vscode.CancellationToken,
     ): Promise<ResourceUploadDocumentDropEdit[] | undefined> {
+        inspectDataTransfer(dataTransfer);
         const loader = this.getLoader(document.languageId);
         const files = await loader.prepareFilesToUpload(dataTransfer);
         if (files.length === 0) {
@@ -85,6 +86,7 @@ export class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProv
         context: vscode.DocumentPasteEditContext,
         token: vscode.CancellationToken,
     ): Promise<ResourceUploadDocumentPasteEdit[] | undefined> {
+        inspectDataTransfer(dataTransfer);
         const loader = this.getLoader(document.languageId);
         const files = await loader.prepareFilesToUpload(dataTransfer);
         if (files.length === 0) {

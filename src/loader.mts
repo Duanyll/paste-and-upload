@@ -3,9 +3,10 @@ import _ from 'lodash';
 import { fileTypeFromBuffer } from 'file-type';
 import * as mimeLookup from 'mime-types';
 import { filesize } from 'filesize';
+import axios from 'axios';
 
-import { extractBasenameAndExtension, generateFileName } from './utils.mjs';
-import { ResourceFileLoaderOptions, MimeTypeDetectionMethod, FileNamingMethod, IncompleteResourceFile, ResourceFile, AllowMultipleFiles, ResourceUploader, UploadDestination } from './common.mjs';
+import { downloadFileWithProgress, extractBasenameAndExtension, generateFileName, headContentType } from './utils.mjs';
+import { ResourceFileLoaderOptions, MimeTypeDetectionMethod, FileNamingMethod, IncompleteResourceFile, ResourceFile, AllowMultipleFiles, UploadDestination } from './common.mjs';
 
 export class ResourceFileLoader {
     private readonly options: ResourceFileLoaderOptions;
@@ -22,7 +23,8 @@ export class ResourceFileLoader {
             imageSnippet: languageOptions.get<string>('imageSnippet')!,
             allowMultipleFiles: languageOptions.get<AllowMultipleFiles>('allowMultipleFiles')!,
             mimeTypeFilter: languageOptions.get<string>('mimeTypeFilter')!,
-            ignoreWorkspaceFiles: languageOptions.get<boolean>('ignoreWorkspaceFiles')!
+            ignoreWorkspaceFiles: languageOptions.get<boolean>('ignoreWorkspaceFiles')!,
+            retrieveOriginalImage: languageOptions.get<boolean>('retrieveOriginalImage')!
         };
     }
 
@@ -46,7 +48,7 @@ export class ResourceFileLoader {
                 }
                 const data = await itemFile.data();
                 const [name, extension] = extractBasenameAndExtension(itemFile.name);
-                files.push({ mime, name, extension, data });
+                files.push({ mime, name, extension, data: Buffer.from(data) });
             }
         }
         return files;
@@ -65,7 +67,7 @@ export class ResourceFileLoader {
                 if (stat.type & vscode.FileType.File) {
                     const data = await vscode.workspace.fs.readFile(uri);
                     const [name, extension] = extractBasenameAndExtension(uri.path);
-                    files.push({ name, extension, data });
+                    files.push({ name, extension, data: Buffer.from(data) });
                 }
             } catch (e) {
                 console.log(`Cannot load file from URI: ${uri}`);
@@ -87,7 +89,7 @@ export class ResourceFileLoader {
         if (mime === 'application/octet-stream') {
             mime = undefined;
         }
-        // First, try to detect mime type based on extension, if allowed
+        // First, try to detect mime type based on content, if allowed
         if (_.isEmpty(mime) && this.options.mimeTypeDetectionMethod === 'content') {
             const result = await fileTypeFromBuffer(file.data);
             if (result) {
@@ -132,6 +134,37 @@ export class ResourceFileLoader {
         }
     }
 
+    private async tryRetrieveOriginalImage(dataTransfer: vscode.DataTransfer, files: ResourceFile[]): Promise<ResourceFile[]> {
+        const htmlContent = await dataTransfer.get('text/html')?.asString();
+        if (_.isEmpty(htmlContent)) {
+            return files;
+        }
+        // Match src="..." in
+        // <img src="https://cdn.duanyll.com/%E4%B8%AD%E6%96%87"/>
+        const regex = /src="([^"]+)"/;
+        const url = regex.exec(htmlContent!)?.[1];
+        if (_.isEmpty(url)) {
+            return files;
+        }
+        // Try to HEAD request the URL to get its content type
+        try {
+            const contentType = await headContentType(url!);
+            const matchingFile = files.find(file => file.mime === contentType);
+            if (matchingFile) {
+                // If a file with the same mime type already exists, skip
+                return files;
+            }
+            // If no matching file is found, download the image
+            const file = await downloadFileWithProgress(url!);
+            const completedFile = await this.completeResourceFile(file);
+            return completedFile ? [completedFile] : files;
+        } catch (error) {
+            vscode.window.showWarningMessage(`Failed to retrieve original image from URL: ${url}. Animated content may be lost.`);
+            console.error(error);
+            return files;
+        }
+    }
+
     public async prepareFilesToUpload(dataTransfer: vscode.DataTransfer): Promise<ResourceFile[]> {
         if (!this.options.enabled) {
             return [];
@@ -170,6 +203,11 @@ export class ResourceFileLoader {
                     return [];
                 }
             }
+        }
+        
+        // Try to retrieve original image if enabled
+        if (this.options.retrieveOriginalImage) {
+            result = await this.tryRetrieveOriginalImage(dataTransfer, result);
         }
 
         // Check against file size limit

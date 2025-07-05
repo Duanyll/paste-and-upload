@@ -1,13 +1,13 @@
 {
   "name": "paste-and-upload",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "duanyll",
   "engines": {
     "vscode": "^1.97.0"
   },
   "license": "MIT",
   "displayName": "Paste and Upload",
-  "description": "Paste images (and other files) directly from your clipboard, upload them to a S3 bucket or save them to your workspace, then insert a link pointing to the image. Works in remote development environments.",
+  "description": "Paste and upload image to S3-Compatible storage. Works in remote development environments.",
   "categories": [
     "Other"
   ],
@@ -94,6 +94,11 @@
           "type": "boolean",
           "default": false,
           "description": "Do not include the file extension in the uploaded file name (key)."
+        },
+        "paste-and-upload.s3.skipExisting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Skip uploading if the file already exists in the destination. Useful when file names are generated based on the content hash."
         },
         "paste-and-upload.workspace.path": {
           "type": "string",
@@ -235,6 +240,12 @@
           "default": true,
           "markdownDescription": "Ignore files that are already in the workspace when uploading files. Other extensions like the built-in Markdown extension may handle these files.",
           "order": 6
+        },
+        "paste-and-upload.retrieveOriginalImage": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Whether to try to download the original image from the clipboard when pasting. This is useful for pasting animated images from browsers like Microsoft Edge, which only provide a static image in the clipboard.",
+          "order": 7
         }
       }
     },
@@ -276,6 +287,8 @@
     "@typescript-eslint/parser": "^8.17.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.6.0",
+    "axios": "^1.10.0",
     "babel-loader": "^9.2.1",
     "eslint": "^9.16.0",
     "file-type": "^20.0.0",
@@ -289,5 +302,7 @@
     "uuid": "^11.0.5",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+  "dependencies": {}
 }

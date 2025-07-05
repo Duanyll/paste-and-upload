@@ -4,14 +4,14 @@ export interface ResourceFile {
     mime: string;
     name: string;
     extension: string;
-    data: Uint8Array;
+    data: Buffer;
 }
 
 export interface IncompleteResourceFile {
     mime?: string;
     name?: string;
     extension?: string;
-    data: Uint8Array;
+    data: Buffer;
 }
 
 export type MimeTypeDetectionMethod = 'content' | 'extension' | 'none';
@@ -30,6 +30,7 @@ export interface ResourceFileLoaderOptions {
     allowMultipleFiles: AllowMultipleFiles;
     mimeTypeFilter: string;
     ignoreWorkspaceFiles: boolean;
+    retrieveOriginalImage: boolean;
 }
 
 export interface ResourceUploadResult {
@@ -51,6 +52,7 @@ export interface S3Options {
     prefix?: string;
     publicUrlBase?: string;
     omitExtension?: boolean;
+    skipExisting?: boolean;
 }
 
 export interface WorkspaceOptions {

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import _ from 'lodash';
-import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, DeleteObjectCommand, S3ServiceException } from '@aws-sdk/client-s3';
 import { Upload } from "@aws-sdk/lib-storage";
 import { filesize } from 'filesize';
 import { ResourceFile, ResourceUploader, ResourceUploadResult, S3Options } from './common.mjs';
@@ -28,7 +28,8 @@ export class S3Uploader implements ResourceUploader {
             bucket: bucket as string,
             prefix: emptyToUndefined(s3Section.get<string>('prefix')),
             publicUrlBase: emptyToUndefined(s3Section.get<string>('publicUrlBase')),
-            omitExtension: s3Section.get<boolean>('omitExtension')
+            omitExtension: s3Section.get<boolean>('omitExtension'),
+            skipExisting: s3Section.get<boolean>('skipExisting')
         };
         this.client = this.createClient();
     }
@@ -45,7 +46,28 @@ export class S3Uploader implements ResourceUploader {
         });
     }
 
+    private async checkIfObjectExists(key: string): Promise<boolean> {
+        try {
+            const headObjectCommand = new DeleteObjectCommand({
+                Bucket: this.s3Option.bucket,
+                Key: key
+            });
+            await this.client.send(headObjectCommand);
+            return true; // Object exists
+        } catch (error) {
+            if (error instanceof S3ServiceException && error.name === 'NotFound') {
+                return false; // Object does not exist
+            }
+            throw error;
+        }
+    }
+
     public async uploadBuffer(buffer: Uint8Array, key: string, contentType?: string): Promise<void> {
+        if (this.s3Option.skipExisting) {
+            if (await this.checkIfObjectExists(key)) {
+                return; // Skip upload if the object already exists
+            }
+        }
         const upload = new Upload({
             client: this.client,
             params: {
